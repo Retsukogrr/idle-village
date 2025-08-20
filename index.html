@@ -4,21 +4,25 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no" />
 <title>Idle Village — Chibi Kawaii V18</title>
+
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff7fb0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+
 <style>
 :root{
   --ink:#fff8ff; --mut:#d2d8ef; --card:rgba(10,14,26,.82); --stroke:rgba(255,255,255,.14);
   --gold:#ffd56a; --chakra:#7dd5ff; --magic:#c8a8ff; --gem:#68f0ff; --emblem:#ffde91;
-  --good:#9cf29f; --warn:#ffd36e; --bad:#ff9b9b;
   --safeTop:env(safe-area-inset-top,0px); --safeBottom:env(safe-area-inset-bottom,0px);
   --space:12px;
 }
 html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--ink);-webkit-tap-highlight-color:transparent}
 *{box-sizing:border-box}
+
+/* BG */
 .bg{position:fixed;inset:0;z-index:0;overflow:hidden}
 .bg .sky{position:absolute;inset:0;background:linear-gradient(#a8d8ff,#e6f3ff 60%,#fdf7ff);filter:saturate(1.05)}
 .bg .mounts{position:absolute;inset:auto 0 0; height:60%;
@@ -30,13 +34,17 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
   opacity:.9; filter:contrast(1.05);
 }
 .bg .temple{position:absolute;left:50%;bottom:22%;width:240px;height:120px;transform:translateX(-50%);opacity:.85;filter:drop-shadow(0 10px 18px rgba(0,0,0,.25))}
-.temple .roof{position:absolute;left:0;right:0;top:0;height:36px;background:linear-gradient(#ff9aa9,#ff7fb0);clip-path:polygon(0 100%,12% 40%,50% 0,88% 40%,100% 100%);}
+.temple .roof{position:absolute;left:0;right:0;top:0;height:36px;background:linear-gradient(#ff9aa9,#ff7fb0);clip-path:polygon(0 100%,12% 40%,50% 0,88% 40%,100% 100%)}
 .temple .body{position:absolute;left:16px;right:16px;top:34px;bottom:0;border-radius:10px;background:linear-gradient(#ffe0ec,#ffd2ea);border:2px solid rgba(0,0,0,.1)}
 .temple .door{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:30px;height:38px;border-radius:6px;background:#6b3d1f;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
 .temple .win{position:absolute;top:18px;width:22px;height:16px;border-radius:4px;background:linear-gradient(#fff,#ffe1a0);box-shadow:inset 0 0 0 2px rgba(90,43,40,.3)}
 .temple .win.l{left:26px} .temple .win.r{right:26px}
+
+/* Sakura */
 .petal{position:absolute;top:-40px;width:14px;height:10px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#ffc7de;opacity:.9;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
 @keyframes fall{0%{transform:translateY(-40px) rotate(0deg)}100%{transform:translateY(110vh) rotate(360deg)}}
+
+/* HUD */
 #hud{position:fixed;left:var(--space);right:var(--space);top:calc(10px + var(--safeTop));display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--stroke);border-radius:16px;padding:8px 10px;z-index:20}
 .tag{display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.08);border:1px solid var(--stroke);border-radius:999px;padding:6px 10px;font-weight:900}
 .dot{width:14px;height:14px;border-radius:50%}
@@ -48,6 +56,8 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
 .flex{flex:1}
 #eventBanner{display:flex;gap:8px;align-items:center}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid var(--stroke);font-weight:800}
+
+/* PANELS */
 .panel{position:fixed;left:var(--space);right:var(--space);bottom:calc(146px + var(--safeBottom));display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;z-index:10}
 .card{background:var(--card);border:1px solid var(--stroke);border-radius:14px;padding:12px}
 .btn{border:1px solid var(--stroke);border-radius:10px;padding:10px;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06));color:#fff;font-weight:900;cursor:pointer}
@@ -55,13 +65,19 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
 .btn.gold{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06)),linear-gradient(45deg,#ffd36e,#ff8f6a);color:#2a1600}
 .btn.blue{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06)),linear-gradient(45deg,#8bb1ff,#6a8bff)}
 .small{color:var(--mut);font-size:13px}
+
+/* WORLD */
 #world{position:fixed;inset:0;z-index:5;pointer-events:none}
 .entity{position:absolute;will-change:transform;filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
 .entity.tap{pointer-events:auto}
+
+/* TABS */
 #tabs{position:fixed;left:0;right:0;bottom:0;padding:8px 10px calc(10px + var(--safeBottom));z-index:12;background:linear-gradient(180deg,rgba(7,11,22,0),rgba(7,11,22,.9) 40%,rgba(7,11,22,.96))}
 .bar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .bar button{border:1px solid var(--stroke);border-radius:12px;padding:10px 8px;background:var(--card);color:var(--mut);font-weight:900}
 .bar button.active{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04));color:#fff}
+
+/* TOASTS + DIALOG */
 #toasts{position:fixed;right:12px;top:calc(94px + var(--safeTop));width:min(360px,calc(100% - 24px));z-index:30}
 .toast{background:var(--card);border:1px solid var(--stroke);border-left:6px solid #ffd257;border-radius:12px;padding:10px;margin:8px 0;animation:fadein .2s ease,fadeout .5s 2.9s forwards}
 @keyframes fadein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
@@ -71,11 +87,38 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
 .row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:1px solid var(--stroke);border-radius:10px;margin:6px 0;background:rgba(255,255,255,.04)}
 .progress{height:8px;background:rgba(255,255,255,.08);border:1px solid var(--stroke);border-radius:999px;overflow:hidden}
 .progress>i{display:block;height:100%;background:linear-gradient(90deg,#ffd56a,#ff9c39)}
+
+/* === Start Overlay === */
+#startOverlay{
+  position:fixed; inset:0; z-index:1000;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  background:linear-gradient(180deg,rgba(10,14,26,.85),rgba(10,14,26,.92));
+  text-align:center; padding:24px;
+}
+#startOverlay h1{margin:0 0 10px; font-size:28px}
+#startOverlay p{margin:0 0 16px; color:#d2d8ef}
+#startBtn{
+  border:1px solid var(--stroke); border-radius:14px; padding:12px 16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06)),linear-gradient(45deg,#ffb1d8,#ff7fb0);
+  color:#fff; font-weight:900; cursor:pointer
+}
+#resetBtn{
+  position:fixed;right:10px;bottom:78px;z-index:990;border-radius:10px;padding:8px 10px;
+  border:1px solid rgba(255,255,255,.25);background:rgba(10,14,26,.82);color:#fff;font-weight:700;cursor:pointer
+}
 </style>
 </head>
 <body>
-<div class="bg"><div class="sky"></div><div class="mounts"></div><div class="temple"><div class="roof"></div><div class="body"><div class="win l"></div><div class="win r"></div><div class="door"></div></div></div></div>
+
+<!-- BG -->
+<div class="bg">
+  <div class="sky"></div>
+  <div class="mounts"></div>
+  <div class="temple"><div class="roof"></div><div class="body"><div class="win l"></div><div class="win r"></div><div class="door"></div></div></div>
+</div>
 <div id="sakura"></div>
+
+<!-- HUD -->
 <div id="hud">
   <div class="tag"><span class="dot gold"></span>Or&nbsp;<b id="g">0</b></div>
   <div class="tag"><span class="dot chakra"></span>Chakra&nbsp;<b id="c">0</b></div>
@@ -85,6 +128,8 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
   <div class="flex"></div>
   <div id="eventBanner" class="small"></div>
 </div>
+
+<!-- PANELS -->
 <div class="panel">
   <div class="card">
     <h3>Village</h3>
@@ -105,29 +150,78 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
     </div>
   </div>
 </div>
+
+<!-- WORLD -->
 <div id="world"></div>
-<div id="tabs"><div class="bar">
-  <button class="active">Village</button>
-  <button onclick="openHeroes()">Héros</button>
-  <button onclick="openQuests()">Quêtes</button>
-  <button onclick="openAchievements()">Succès</button>
-  <button onclick="openPrestige()">Ascension</button>
-</div></div>
+
+<!-- TABS -->
+<div id="tabs">
+  <div class="bar">
+    <button class="active">Village</button>
+    <button onclick="openHeroes()">Héros</button>
+    <button onclick="openQuests()">Quêtes</button>
+    <button onclick="openAchievements()">Succès</button>
+    <button onclick="openPrestige()">Ascension</button>
+  </div>
+</div>
+
+<!-- TOASTS / DIALOG -->
 <div id="toasts" aria-live="polite"></div>
 <div id="dialog" class="dialog" style="display:none"></div>
+
+<!-- === START OVERLAY === -->
+<div id="startOverlay">
+  <h1>Idle Village — Chibi Kawaii</h1>
+  <p>Appuie sur “Démarrer” pour activer l’audio et lancer le jeu</p>
+  <button id="startBtn">Démarrer</button>
+</div>
+
+<!-- === RESET BUTTON === -->
+<button id="resetBtn" title="Réinitialiser la partie">⚙️ Réinitialiser</button>
+
 <script>
+/* ===== Shorthands ===== */
 const $=id=>document.getElementById(id);
 const toast=m=>{const d=document.createElement('div');d.className='toast';d.textContent=m;$('toasts').appendChild(d);setTimeout(()=>d.remove(),3200)};
 const world=$('world'), sak=$('sakura'), dialog=$('dialog');
 function setPos(el,x,y){ el.style.transform=`translate(${x}px,${y}px)`; }
+
+/* ===== Sakura ===== */
 function spawnPetal(){ const p=document.createElement('div'); p.className='petal'; p.style.left=Math.random()*100+'%'; p.style.animation=`fall ${6+Math.random()*6}s linear`; sak.appendChild(p); setTimeout(()=>p.remove(),13000); }
 for(let i=0;i<24;i++) setTimeout(spawnPetal,Math.random()*3000); setInterval(spawnPetal,700);
-let audioCtx=null; function ping(freq=880,ms=120){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)(); const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.type='sine'; o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination); g.gain.value=0.06; o.start(); g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+ms/1000); o.stop(audioCtx.currentTime+ms/1000);}catch(e){}}
+
+/* ===== WebAudio unlock ===== */
+let audioCtx=null; function ping(freq=880,ms=120){
+  try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='sine'; o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination);
+    g.gain.value=0.06; o.start(); g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+ms/1000); o.stop(audioCtx.currentTime+ms/1000);
+  }catch(e){}
+}
+$('startBtn').addEventListener('click',()=>{
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const s=audioCtx.createOscillator(), g=audioCtx.createGain();
+    g.gain.value=0.0001; s.connect(g); g.connect(audioCtx.destination); s.start(); s.stop(audioCtx.currentTime+0.05);
+  }catch(e){}
+  $('startOverlay').style.display='none';
+  startGame();
+});
+
+/* ===== RESET button ===== */
+$('resetBtn').onclick=()=>{
+  localStorage.removeItem('idle_chibi_v18');
+  location.reload(); // le bonus de départ sera ré-appliqué au premier lancement
+};
+
+/* ===== Game state ===== */
 let gold=0, chakra=0, magic=0, gems=90, emblems=0, pity=0;
 const g=$('g'), c=$('c'), m=$('m'), j=$('j'), e=$('e');
 const buildings=[], heroes=[];
 const KEY='idle_chibi_v18';
 function updateHUD(){ g.textContent=gold|0; c.textContent=chakra|0; m.textContent=magic|0; j.textContent=gems|0; e.textContent=emblems|0; }
+
+/* ===== Buildings visuals ===== */
 const BDATA={
   Maison:{ w:160,h:120, cost:{g:80,c:10,m:0}, mult:1.44, prod:{g:1.2,c:0.2,m:0.05},
     svg:`<svg width="160" height="120" viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
@@ -160,6 +254,8 @@ const BDATA={
       <rect x="74" y="84" width="14" height="24" rx="3" fill="#6b3d1f"/>
     </svg>`}
 };
+
+/* ===== Heroes/Gacha ===== */
 const HPOOL=[
   {name:'Samurai',     c1:'#ff9aa9', c2:'#ff7fb0', base:{g:1.25,c:0,m:0}},
   {name:'Ninja',       c1:'#8cc9ff', c2:'#4aa6ff', base:{g:0.6,c:0.6,m:0}},
@@ -170,39 +266,43 @@ const HPOOL=[
   {name:'Invocateur Kitsune', c1:'#ffe6b8', c2:'#ffcf88', base:{g:0.3,c:0.3,m:1.0}},
 ];
 const RAR=[{k:'C',n:'Commun',w:70,m:1.0},{k:'R',n:'Rare',w:22,m:1.25},{k:'E',n:'Épique',w:7,m:1.6},{k:'L',n:'Légendaire',w:1,m:2.3}];
-const SKINS=[
-  {hero:'Onna-Bugeisha', name:"Kimono d'été"},
-  {hero:'Kunoichi',      name:"Tenue ninja nocturne"},
-  {hero:'Mage',          name:"Lapin magique"},
-  {hero:'Invocateur Kitsune', name:"Masque cérémoniel"},
-  {hero:'Samurai',       name:"Armure brillante"},
-];
+
+/* ===== Skins ===== */
+const ownedSkins=new Set();
+
+/* ===== Events ===== */
 function now(){ return new Date(); }
 function isWeekendSakura(d){ const day=d.getDay(); const h=d.getHours(); if(day===5 && h>=18) return true; if(day===6 || day===0) return true; if(day===1 && h<6) return true; return false; }
 function isFestivalLanternes(d){ const date=d.getDate(); return date>=15 && date<=17; }
 function eventEffects(){ const d=now(); return { pityBoost: isWeekendSakura(d)? 0.5 : 0, prodMult:  isFestivalLanternes(d)? 2.0 : 1.0 }; }
-function renderEventBanner(){ const eff=eventEffects(); const parts=[]; if(eff.pityBoost>0) parts.push(`🌸 Weekend Sakura : +50% Rare+`); if(eff.prodMult>1) parts.push(`🏮 Festival des Lanternes : production ×${eff.prodMult}`); $('eventBanner').innerHTML = parts.length? parts.map(p=>`<span class="badge">${p}</span>`).join(' ') : `<span class="small">Aucun événement en cours</span>`; }
+function renderEventBanner(){ const eff=eventEffects(); const parts=[]; if(eff.pityBoost>0) parts.push('🌸 Weekend Sakura : +50% Rare+'); if(eff.prodMult>1) parts.push('🏮 Festival des Lanternes : production ×'+eff.prodMult); $('eventBanner').innerHTML = parts.length? parts.map(p=>'<span class="badge">'+p+'</span>').join(' ') : '<span class="small">Aucun événement en cours</span>'; }
 setInterval(renderEventBanner, 1000); renderEventBanner();
+
+/* ===== Helpers ===== */
 function rnd(a,b){ return Math.random()*(b-a)+a; }
 function makeEntity(svg,w,h){ const wrap=document.createElement('div'); wrap.className='entity tap'; wrap.style.width=w+'px'; wrap.style.height=h+'px'; wrap.innerHTML=svg; world.appendChild(wrap); return wrap; }
+
+/* ===== Buildings ===== */
 function costOf(type,lvl){ const b=BDATA[type]; const k=Math.pow(b.mult,lvl); return {gold:Math.ceil(b.cost.g*k), chakra:Math.ceil(b.cost.c*k), magic:Math.ceil(b.cost.m*k)}; }
 function build(type){
-  const c=costOf(type,0); if(gold<c.gold||chakra<c.chakra||magic<c.magic){ toast(`Coût ${type}: 💰${c.gold} 🔮${c.chakra} ✨${c.magic}`); return; }
+  const c=costOf(type,0); if(gold<c.gold||chakra<c.chakra||magic<c.magic){ toast('Coût '+type+': 💰'+c.gold+' 🔮'+c.chakra+' ✨'+c.magic); return; }
   gold-=c.gold; chakra-=c.chakra; magic-=c.magic; updateHUD();
   const b=BDATA[type]; const el=makeEntity(b.svg,b.w,b.h);
   const x=innerWidth*0.2+rnd(0,innerWidth*0.6), y=innerHeight*0.58+rnd(-4,42); setPos(el,x,y);
   const obj={x,y,lvl:1,type,el,base:b}; buildings.push(obj);
   el.addEventListener('click',()=>upgrade(el));
   el.animate([{transform:el.style.transform+' scale(0.9)'},{transform:el.style.transform+' scale(1)'}],{duration:220,easing:'ease-out'});
-  ping(660); toast(`${type} construit !`); saveSoon(); bumpQuest('build');
+  ping(660); toast(type+' construit !'); saveSoon(); bumpQuest('build');
 }
 function upgrade(el){
   const b=buildings.find(z=>z.el===el); if(!b) return; const c=costOf(b.type,b.lvl);
   if(gold<c.gold||chakra<c.chakra||magic<c.magic){ toast('Ressources insuffisantes'); return; }
   gold-=c.gold; chakra-=c.chakra; magic-=c.magic; b.lvl++; updateHUD();
   el.animate([{transform:el.style.transform+' scale(1)'},{transform:el.style.transform+' scale(1.08)'},{transform:el.style.transform+' scale(1)'}],{duration:280});
-  ping(520); toast(`${b.type} → niv ${b.lvl}`); saveSoon(); bumpQuest('upgrade');
+  ping(520); toast(b.type+' → niv '+b.lvl); saveSoon(); bumpQuest('upgrade');
 }
+
+/* ===== Gacha ===== */
 const FEATURED='Onna-Bugeisha';
 function pickR(base){ const tot=base.reduce((s,r)=>s+r.w,0); let x=Math.random()*tot; for(const r of base){ x-=r.w; if(x<=0) return r; } return base[0]; }
 function addHero(r, forcedName=null){
@@ -239,7 +339,7 @@ function openGacha(){
 }
 function summon10(kind='perm'){
   if(gems<45){ toast('Pas assez de gemmes (45)'); return; }
-  gems-=45; updateHUD(); 
+  gems-=45; updateHUD();
   const fx=document.createElement('div'); fx.style.position='fixed'; fx.style.left='50%'; fx.style.top='55%'; fx.style.width='140px'; fx.style.height='140px'; fx.style.margin='-70px 0 0 -70px';
   fx.style.border='6px solid rgba(255,255,255,.85)'; fx.style.borderRadius='50%'; fx.style.boxShadow='0 0 44px rgba(255,180,220,.7), inset 0 0 40px rgba(120,180,255,.7)'; fx.style.zIndex=50; document.body.appendChild(fx);
   fx.animate([{transform:'scale(0.8)',opacity:.9},{transform:'scale(1.4)',opacity:0}],{duration:900,easing:'ease-out'}); setTimeout(()=>fx.remove(),920);
@@ -253,18 +353,11 @@ function summon10(kind='perm'){
     pulls.push(r);
   }
   if(!gotRare) pulls[9]=RAR[1];
-  pulls.forEach((r,i)=>{
-    setTimeout(()=>{
-      if(kind==='feat' && (r.k==='E'||r.k==='L') && Math.random()<0.45){
-        addHero(r, FEATURED);
-      }else{
-        addHero(r);
-      }
-    }, 140*i);
-  });
+  pulls.forEach((r,i)=>{ setTimeout(()=>{ if(kind==='feat' && (r.k==='E'||r.k==='L') && Math.random()<0.45){ addHero(r, FEATURED); } else { addHero(r); } }, 140*i); });
   setTimeout(()=>{ toast('Invocation x10 ✨'); saveSoon(); bumpQuest('summon'); }, 1600);
 }
-const ownedSkins=new Set();
+
+/* ===== Skins (UI minimal) ===== */
 function openSkins(){
   const items=[
     {hero:'Onna-Bugeisha', name:"Kimono d'été"},
@@ -284,6 +377,8 @@ function unlockSkin(id){
   if(gems<10){ toast('Pas assez de gemmes'); return; }
   gems-=10; ownedSkins.add(id); updateHUD(); toast('Skin débloqué ✨'); openSkins(); saveSoon();
 }
+
+/* ===== Quêtes / Succès / Recherche / Prestige ===== */
 let quests=[]; function newDailyQuests(){
   quests=[
     {id:'q_build',name:'Construire 1 bâtiment',type:'build',target:1,progress:0,reward:{gems:10}},
@@ -332,6 +427,8 @@ function buyTech(id){
   if(gold<t.costG||chakra<t.costC||magic<t.costM){ toast('Ressources insuffisantes'); return; }
   gold-=t.costG; chakra-=t.costC; magic-=t.costM; ownedTech.add(id); updateHUD(); toast('Recherche débloquée : '+t.name); saveSoon(); openResearch();
 }
+
+/* ===== Production / Prestige ===== */
 function totalMult(){
   let mg=1, mc=1, mm=1;
   ownedTech.forEach(id=>{ const t=TECH.find(x=>x.id===id); if(!t) return; if(t.mult.g) mg*=t.mult.g; if(t.mult.c) mc*=t.mult.c; if(t.mult.m) mm*=t.mult.m; });
@@ -351,7 +448,7 @@ setInterval(tick,5000);
 function calcPrestigeGain(){ const score = gold + chakra*2 + magic*3; return Math.floor(score/18000); }
 function openPrestige(){
   const gain=calcPrestigeGain();
-  showDialog('Ascension (Prestige)', 
+  showDialog('Ascension (Prestige)',
     '<p class="small">Réinitialise Or/Chakra/Magie, bâtiments et héros. Conserve gemmes, recherches, succès, skins. Accorde des <b>Emblèmes</b> (+15% prod globale chacun).</p>'+
     '<div class="row"><div><b>Emblèmes potentiels</b></div><div class="badge">'+gain+'</div></div>'+
     '<div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="hideDialog()">Annuler</button><button class="btn gold" onclick="doPrestige()">Ascension</button></div>'
@@ -362,14 +459,20 @@ function doPrestige(){ const gain=calcPrestigeGain(); if(gain<=0){ toast('Progre
   buildings.splice(0).forEach(b=>b.el.remove()); heroes.splice(0).forEach(h=>h.el.remove());
   hideDialog(); updateHUD(); toast('Ascension +'+gain+' Emblème(s) 🏵️'); saveSoon();
 }
+
+/* ===== Heroes list ===== */
 function openHeroes(){
   showDialog('Héros', heroes.length? heroes.map(h=>
     '<div class="row"><div><b>'+h.type.name+'</b> <span class="badge">'+h.rar.n+'</span><div class="small">Prod: 💰'+h.prod.g+' 🔮'+h.prod.c+' ✨'+h.prod.m+'</div></div><div class="badge">Niv '+h.lvl+'</div></div>'
   ).join('') : '<p class="small">Pas encore de héros. Essaye le <b>Portail</b> !</p>');
 }
+
+/* ===== Dialog helpers ===== */
 function showDialog(title, html){ dialog.style.display='block'; dialog.innerHTML='<h3>'+title+'</h3>'+html; }
 function hideDialog(){ dialog.style.display='none'; dialog.innerHTML=''; }
-const achieved=new Set(); const ownedTech=new Set(); const ownedSkins=new Set();
+
+/* ===== Save/Load & Daily ===== */
+const achieved=new Set(); const ownedTech=new Set();
 let savePending=false;
 function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function saveSoon(){ if(savePending) return; savePending=true; setTimeout(()=>{ try{
@@ -380,14 +483,7 @@ function saveSoon(){ if(savePending) return; savePending=true; setTimeout(()=>{ 
     tech:[...ownedTech], achieved:[...achieved], quests, day: todayKey(), skins:[...ownedSkins], time: Date.now()
   }));
 } catch(e){} savePending=false; },600); }
-let quests=[];
-function newDailyQuests(){
-  quests=[
-    {id:'q_build',name:'Construire 1 bâtiment',type:'build',target:1,progress:0,reward:{gems:10}},
-    {id:'q_upgrade',name:'Améliorer 2 fois',type:'upgrade',target:2,progress:0,reward:{gold:300}},
-    {id:'q_summon',name:'Faire 1 invocation',type:'summon',target:1,progress:0,reward:{chakra:120}}
-  ];
-}
+
 function load(){
   const raw=localStorage.getItem(KEY); if(!raw){ newDailyQuests(); startBonus(); return; }
   try{
@@ -402,8 +498,14 @@ function load(){
   updateHUD();
 }
 function startBonus(){ gold+=1200; chakra+=360; magic+=180; gems+=120; updateHUD(); toast('Bonus départ : 💰1200 🔮360 ✨180 💎120'); }
-document.addEventListener('DOMContentLoaded',()=>{ load(); renderEventBanner(); });
-window.addEventListener('beforeunload',()=>{ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}'); d.time=Date.now(); localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){} });
+
+/* ===== Start game after overlay ===== */
+function startGame(){
+  renderEventBanner();
+  load();
+}
+
+/* ===== SW PWA ===== */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(()=>{});
