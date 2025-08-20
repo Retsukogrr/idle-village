@@ -2,7 +2,7 @@
 Idle game japonais chibi/kawaii : construis ton village, invoque des héros, recherche, quêtes, événements, prestige. PWA installable (offline).
 
 ## Jouer
-Ouvre : `https://TON-NOM.github.io/idle-village/`  
+Ouvre : `(https://retsukogrr.github.io/idle-village/)`  
 Sur iPhone : Safari → Partager → **Ajouter à l’écran d’accueil**.
 
 ## Structure
