@@ -170,10 +170,10 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe U
 <div id="dialog" class="dialog" style="display:none"></div>
 
 <!-- === START OVERLAY === -->
-<div id="startOverlay">
+<div id="startOverlay" role="dialog" aria-modal="true">
   <h1>Idle Village — Chibi Kawaii</h1>
-  <p>Appuie sur “Démarrer” pour activer l’audio et lancer le jeu</p>
-  <button id="startBtn">Démarrer</button>
+  <p>Appuie pour activer l’audio et lancer le jeu</p>
+  <button id="startBtn" type="button" role="button" tabindex="0">Démarrer</button>
 </div>
 
 <!-- === RESET BUTTON === -->
@@ -190,7 +190,7 @@ function setPos(el,x,y){ el.style.transform=`translate(${x}px,${y}px)`; }
 function spawnPetal(){ const p=document.createElement('div'); p.className='petal'; p.style.left=Math.random()*100+'%'; p.style.animation=`fall ${6+Math.random()*6}s linear`; sak.appendChild(p); setTimeout(()=>p.remove(),13000); }
 for(let i=0;i<24;i++) setTimeout(spawnPetal,Math.random()*3000); setInterval(spawnPetal,700);
 
-/* ===== WebAudio unlock ===== */
+/* ===== WebAudio + START overlay (iOS-safe) ===== */
 let audioCtx=null; function ping(freq=880,ms=120){
   try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
     const o=audioCtx.createOscillator(), g=audioCtx.createGain();
@@ -198,20 +198,41 @@ let audioCtx=null; function ping(freq=880,ms=120){
     g.gain.value=0.06; o.start(); g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+ms/1000); o.stop(audioCtx.currentTime+ms/1000);
   }catch(e){}
 }
-$('startBtn').addEventListener('click',()=>{
-  try{
-    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
-    const s=audioCtx.createOscillator(), g=audioCtx.createGain();
-    g.gain.value=0.0001; s.connect(g); g.connect(audioCtx.destination); s.start(); s.stop(audioCtx.currentTime+0.05);
-  }catch(e){}
-  $('startOverlay').style.display='none';
-  startGame();
-});
+(function(){
+  const overlay = document.getElementById('startOverlay');
+  const btn = document.getElementById('startBtn');
+  let unlocked = false;
+
+  function unlockAudio(){
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0.0001;
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.05);
+    } catch(e) {}
+  }
+  function startOnce(e){
+    if (unlocked) return;
+    unlocked = true;
+    e && e.preventDefault && e.preventDefault();
+    unlockAudio();
+    overlay.style.display = 'none';
+    if (typeof startGame === 'function') startGame();
+  }
+  overlay.addEventListener('touchstart', startOnce, {passive:false, once:true});
+  overlay.addEventListener('click',       startOnce, {once:true});
+  btn.addEventListener('touchstart',      startOnce, {passive:false, once:true});
+  btn.addEventListener('click',           startOnce, {once:true});
+  btn.addEventListener('keydown', (e)=>{ if (e.key==='Enter'||e.key===' ') startOnce(e); });
+})();
 
 /* ===== RESET button ===== */
 $('resetBtn').onclick=()=>{
   localStorage.removeItem('idle_chibi_v18');
-  location.reload(); // le bonus de départ sera ré-appliqué au premier lancement
+  location.reload();
 };
 
 /* ===== Game state ===== */
@@ -309,7 +330,7 @@ function addHero(r, forcedName=null){
   const list = forcedName? HPOOL.filter(h=>h.name===forcedName) : HPOOL;
   const t=list[Math.random()*list.length|0];
   const svg=`<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <defs><linearGradient id="h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${t.c1}"/><stop offset="1" stop-color="${t.c2}"/></linearGradient></defs>
+  <defs><linearGradient id="h" x1="0" y="0" x2="1" y2="1"><stop offset="0" stop-color="${t.c1}"/><stop offset="1" stop-color="${t.c2}"/></linearGradient></defs>
   <circle cx="64" cy="58" r="42" fill="url(#h)"/><circle cx="64" cy="64" r="30" fill="#ffd9b3"/>
   <ellipse cx="48" cy="64" rx="8" ry="10" fill="#111"/><ellipse cx="80" cy="64" rx="8" ry="10" fill="#111"/>
   <circle cx="46" cy="62" r="3.5" fill="#fff"/><circle cx="78" cy="62" r="3.5" fill="#fff"/>
@@ -379,7 +400,8 @@ function unlockSkin(id){
 }
 
 /* ===== Quêtes / Succès / Recherche / Prestige ===== */
-let quests=[]; function newDailyQuests(){
+let quests=[];
+function newDailyQuests(){
   quests=[
     {id:'q_build',name:'Construire 1 bâtiment',type:'build',target:1,progress:0,reward:{gems:10}},
     {id:'q_upgrade',name:'Améliorer 2 fois',type:'upgrade',target:2,progress:0,reward:{gold:300}},
@@ -472,9 +494,8 @@ function showDialog(title, html){ dialog.style.display='block'; dialog.innerHTML
 function hideDialog(){ dialog.style.display='none'; dialog.innerHTML=''; }
 
 /* ===== Save/Load & Daily ===== */
-const achieved=new Set(); const ownedTech=new Set();
-let savePending=false;
 function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+let savePending=false;
 function saveSoon(){ if(savePending) return; savePending=true; setTimeout(()=>{ try{
   localStorage.setItem(KEY, JSON.stringify({
     gold, chakra, magic, gems, emblems, pity,
