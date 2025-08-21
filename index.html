@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Idle Village — Gacha 20 Héros (cartes 300/150)</title>
+<title>Idle Village — Gacha 20 Héros (cartes 300/150 + debug images)</title>
 <style>
   :root{
     --bg:#0f1220; --panel:#1a1f36; --ink:#e8ecff; --muted:#a8b2d1;
@@ -28,6 +28,11 @@
   .tiny{font-size:12px;color:var(--muted)}
   footer{opacity:.7;font-size:12px;margin-top:14px}
   canvas.card{display:block;border-radius:12px}
+  /* Debug */
+  #debug{margin-top:16px}
+  #debug .imgrow{display:flex;align-items:center;gap:10px;background:#0f1426;border:1px solid #27314f;padding:8px;border-radius:8px;margin-bottom:6px}
+  #debug img{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #223}
+  .ok{color:#8cffc2} .ko{color:#ff9a9a}
 </style>
 </head>
 <body>
@@ -65,7 +70,14 @@
     </section>
   </div>
 
-  <footer>Place les images dans <code>assets/heroes</code> (ex: <code>assets/heroes/kurogane.png</code>). Le cadre, le badge et la bannière nom sont ajoutés au rendu.</footer>
+  <!-- DEBUG IMAGES -->
+  <section id="debug" class="panel">
+    <h2>Debug Images (assets/heroes/*.png)</h2>
+    <div id="debugList"></div>
+    <div class="tiny">Si tu vois ❌, renomme le fichier exactement comme indiqué et vérifie qu’il est bien dans <code>assets/heroes/</code>.</div>
+  </section>
+
+  <footer>Structure requise : <code>index.html</code> à la racine, images dans <code>assets/heroes</code>. Les noms sont sensibles à la casse.</footer>
 </div>
 
 <script>
@@ -98,7 +110,6 @@ const HEROES = {
   kouryuu:  {name:"Kouryuu",  rarity:"UR", role:"Dragon Divin",  file:"assets/heroes/kouryuu.png"},
   mizuhana: {name:"Mizuhana", rarity:"UR", role:"Esprit Céleste",file:"assets/heroes/mizuhana.png"}
 };
-
 const RARITY_COLOR = { R:"#3b82f6", SR:"#8b5cf6", SSR:"#eab308", UR:"#06b6d4" };
 
 /* =============================
@@ -255,6 +266,21 @@ document.getElementById("btnPull1").onclick=pull1;
 document.getElementById("btnPull10").onclick=pull10;
 document.getElementById("btnGift").onclick=()=>{ state.gems+=50; save(); };
 document.getElementById("btnReset").onclick=()=>{ if(confirm("Réinitialiser ?")){ state=structuredClone(DEF_SAVE); save(); document.getElementById("portal").innerHTML=""; refreshCollection(); } };
+
+/* =============================
+   DEBUG IMAGES — liste ce qui charge / échoue
+   ============================= */
+const debugEl = document.getElementById("debugList");
+Object.entries(HEROES).forEach(([key,h])=>{
+  const row=document.createElement("div"); row.className="imgrow";
+  const img=document.createElement("img"); img.src=h.file;
+  const name=document.createElement("div"); name.textContent=`${key} → ${h.file}`;
+  const status=document.createElement("div");
+  img.onload=()=>{ status.innerHTML = "<span class='ok'>✅ chargé</span>"; };
+  img.onerror=()=>{ status.innerHTML = "<span class='ko'>❌ introuvable</span>"; };
+  row.appendChild(img); row.appendChild(name); row.appendChild(status);
+  debugEl.appendChild(row);
+});
 
 save(); refreshCollection();
 </script>
