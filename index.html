@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Idle Village — Gacha 20 Héros (Full V20)</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#1a1f36; --ink:#e8ecff; --muted:#a8b2d1;
+    --r:#4aa3ff; --sr:#8e44ad; --ssr:#d4af37; --ur:#73ffdf;
+  }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Arial,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  header h1{font-size:20px;margin:0}
+  .pill{background:var(--panel);padding:8px 12px;border-radius:999px;color:var(--muted);display:inline-flex;gap:8px;align-items:center}
+  .badge{padding:2px 8px;border-radius:999px;font-weight:700}
+  .b-r{background:var(--r)} .b-sr{background:var(--sr)} .b-ssr{background:var(--ssr); color:#363000} .b-ur{background:var(--ur); color:#00352e}
+  .panels{display:grid;grid-template-columns: 1fr 1fr; gap:16px}
+  .panel{background:var(--panel);border-radius:12px;padding:14px}
+  h2{font-size:16px;margin:0 0 10px}
+  button{background:#2a335a;color:#fff;border:1px solid #364173;border-radius:10px;padding:10px 14px;cursor:pointer}
+  button:hover{filter:brightness(1.05)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  #portal{display:flex;gap:12px;flex-wrap:wrap;min-height:336px;padding:6px;border:1px dashed #344; border-radius:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(160px,1fr));gap:10px}
+  .cell{background:#101426;border-radius:12px;padding:10px;text-align:center}
+  .cell img{width:100%;border-radius:10px}
+  .tiny{font-size:12px;color:var(--muted)}
+  .warn{color:#ffc065}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .mt8{margin-top:8px} .mt12{margin-top:12px}
+  canvas.card{display:block;width:320px;height:320px;background:#000;border-radius:12px}
+  footer{opacity:.7;font-size:12px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Idle Village — Gacha (20 Héros)</h1>
+    <div class="row">
+      <span class="pill">💎 Gemmes : <strong id="gems">0</strong></span>
+      <span class="pill">🎒 Héros possédés : <strong id="ownedCount">0</strong>/20</span>
+    </div>
+  </header>
+
+  <div class="panels">
+    <!-- Portail -->
+    <section class="panel">
+      <h2>Portail d’invocation</h2>
+      <div class="tiny">Probabilités : <span class="badge b-r">R 65%</span> <span class="badge b-sr">SR 25%</span> <span class="badge b-ssr">SSR 8%</span> <span class="badge b-ur">UR 2%</span> — <span class="warn">pity</span> : ≥ SR garanti en 10, ≥ SSR en 50</div>
+      <div class="actions mt8">
+        <button id="btnPull1">✨ Invoquer ×1 (5💎)</button>
+        <button id="btnPull10">✨ Invoquer ×10 (50💎)</button>
+        <button id="btnGift">+50💎 (test)</button>
+        <button id="btnReset">Réinitialiser</button>
+      </div>
+      <div id="portal" class="mt12"></div>
+    </section>
+
+    <!-- Collection -->
+    <section class="panel">
+      <h2>Collection</h2>
+      <div class="tiny">Cadre, badge et bannière uniformes (même position/tailles) — aucune stat sur les images.</div>
+      <div id="collection" class="grid mt12"></div>
+    </section>
+  </div>
+
+  <footer>Les portraits se trouvent dans <code>assets/heroes</code>. Tu peux remplacer les images par tes versions finales sans changer les noms de fichiers.</footer>
+</div>
+
+<script>
+const RARITY_STYLE = {
+  R:   { frame:"#4aa3ff", glow:"#a8d8ff", label:"R" },
+  SR:  { frame:"#8e44ad", glow:"#d1a4ff", label:"SR" },
+  SSR: { frame:"#d4af37", glow:"#ffe784", label:"SSR" },
+  UR:  { frame:"#73ffdf", glow:"#e2fff8", label:"UR" }
+};
+
+const HEROES = {
+  kurogane: {name:"Kurogane", rarity:"R",  role:"Assassin",      file:"assets/heroes/kurogane.png"},
+  ayaka:    {name:"Ayaka",    rarity:"R",  role:"Archer",        file:"assets/heroes/ayaka.png"},
+  shirobo:  {name:"Shirobo",  rarity:"R",  role:"Moine",         file:"assets/heroes/shirobo.png"},
+  midori:   {name:"Midori",   rarity:"R",  role:"Alchimiste",    file:"assets/heroes/midori.png"},
+  tsubasa:  {name:"Tsubasa",  rarity:"R",  role:"Lancier",       file:"assets/heroes/tsubasa.png"},
+  hanako:   {name:"Hanako",   rarity:"R",  role:"Kunoichi",      file:"assets/heroes/hanako.png"},
+
+  takemaru: {name:"Takemaru", rarity:"SR", role:"Samurai",       file:"assets/heroes/takemaru.png"},
+  sayuri:   {name:"Sayuri",   rarity:"SR", role:"Mage",          file:"assets/heroes/sayuri.png"},
+  jubei:    {name:"Jubei",    rarity:"SR", role:"Ronin",         file:"assets/heroes/jubei.png"},
+  akihiko:  {name:"Akihiko",  rarity:"SR", role:"Onmyoji",       file:"assets/heroes/akihiko.png"},
+  kohana:   {name:"Kohana",   rarity:"SR", role:"Kitsune",       file:"assets/heroes/kohana.png"},
+  renzou:   {name:"Renzou",   rarity:"SR", role:"Shogun",        file:"assets/heroes/renzou.png"},
+  daigo:    {name:"Daigo",    rarity:"SR", role:"Moine Guerrier",file:"assets/heroes/daigo.png"},
+  yumeko:   {name:"Yumeko",   rarity:"SR", role:"Shaman",        file:"assets/heroes/yumeko.png"},
+
+  hikari:   {name:"Hikari",   rarity:"SSR",role:"Prêtresse",     file:"assets/heroes/hikari.png"},
+  raiden:   {name:"Raiden",   rarity:"SSR",role:"Yokai Guerrier",file:"assets/heroes/raiden.png"},
+  ryuzen:   {name:"Ryuzen",   rarity:"SSR",role:"Dragon Hum.",   file:"assets/heroes/ryuzen.png"},
+  amateru:  {name:"Amateru",  rarity:"SSR",role:"Impératrice",   file:"assets/heroes/amateru.png"},
+
+  kouryuu:  {name:"Kouryuu",  rarity:"UR", role:"Dragon Divin",  file:"assets/heroes/kouryuu.png"},
+  mizuhana: {name:"Mizuhana", rarity:"UR", role:"Esprit Céleste",file:"assets/heroes/mizuhana.png"}
+};
+
+const SAVE_KEY="idle_full_v20_save";
+const DEF_SAVE={ gems:50, pity10:0, pity50:0, owned:{} };
+let state = load() || structuredClone(DEF_SAVE); save();
+
+function load(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch(e){ return null; } }
+function save(){
+  localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  document.getElementById("gems").textContent = state.gems;
+  document.getElementById("ownedCount").textContent = Object.keys(HEROES).filter(k=>state.owned[k]).length;
+}
+function randRange([a,b]){ return Math.floor(a + Math.random()*(b-a+1)); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+const STATS_TEMPLATE={
+  R:{attack:[55,70], defense:[35,55], magic:[15,35], speed:[70,95]},
+  SR:{attack:[70,85], defense:[55,75], magic:[50,90], speed:[55,85]},
+  SSR:{attack:[85,100], defense:[70,90], magic:[80,100], speed:[60,90]},
+  UR:{attack:[100,120], defense:[85,110], magic:[100,130], speed:[80,110]}
+};
+
+const poolByRarity = Object.entries(HEROES).reduce((acc,[k,v])=>{ (acc[v.rarity]??=[]).push(k); return acc;}, {});
+const PRICE_SINGLE=5, PRICE_TEN=50;
+const RATES=[{rarity:"UR",w:2},{rarity:"SSR",w:8},{rarity:"SR",w:25},{rarity:"R",w:65}];
+
+function rollRarity(){
+  const p10=state.pity10>=9, p50=state.pity50>=49;
+  if (p50){
+    const pool=RATES.filter(x=>x.rarity==="SSR"||x.rarity==="UR");
+    let sum=pool.reduce((s,x)=>s+x.w,0), t=Math.random()*sum;
+    for(const it of pool){ if((t-=it.w)<=0) return it.rarity; } return "SSR";
+  }
+  if (p10){
+    const pool=RATES.filter(x=>x.rarity!=="R");
+    let sum=pool.reduce((s,x)=>s+x.w,0), t=Math.random()*sum;
+    for(const it of pool){ if((t-=it.w)<=0) return it.rarity; } return "SR";
+  }
+  let t=Math.random()*100; for(const it of RATES){ if((t-=it.w)<=0) return it.rarity; } return "R";
+}
+
+async function renderCard({portrait,name,rarity="R",size=512}){
+  const can=document.createElement("canvas"); can.className="card"; can.width=can.height=size; const ctx=can.getContext("2d");
+  const RS={R:{frame:"#4aa3ff",glow:"#a8d8ff",label:"R"}, SR:{frame:"#8e44ad",glow:"#d1a4ff",label:"SR"}, SSR:{frame:"#d4af37",glow:"#ffe784",label:"SSR"}, UR:{frame:"#73ffdf",glow:"#e2fff8",label:"UR"}}[rarity];
+  ctx.fillStyle="#0b0f1a"; ctx.fillRect(0,0,size,size);
+  let img; try{ img=await loadImage(portrait);}catch{ img=await makeFallback(name); }
+  const pad=Math.round(size*0.08), rx=Math.round(size*0.04), inner={x:pad,y:pad,w:size-2*pad,h:size-2*pad};
+  const sR=img.width/img.height, tR=inner.w/inner.h; let dw,dh; if(sR>tR){ dh=inner.h; dw=dh*sR; } else { dw=inner.w; dh=dw/sR; }
+  const dx=inner.x+(inner.w-dw)/2, dy=inner.y+(inner.h-dh)/2;
+  ctx.save(); rr(ctx,inner.x,inner.y,inner.w,inner.h,rx); ctx.clip(); ctx.drawImage(img,dx,dy,dw,dh); ctx.restore();
+  const grad=ctx.createLinearGradient(0,inner.y,0,inner.y+inner.h); grad.addColorStop(0,"rgba(255,255,255,.05)"); grad.addColorStop(1,"rgba(0,0,0,.25)");
+  ctx.fillStyle=grad; rr(ctx,inner.x,inner.y,inner.w,inner.h,rx); ctx.fill();
+  ctx.lineWidth=Math.round(size*0.014); ctx.strokeStyle=RS.frame; rr(ctx,pad,pad,size-2*pad,size-2*pad,rx+4); ctx.stroke();
+  ctx.lineWidth=Math.round(size*0.006); ctx.strokeStyle=RS.glow; rr(ctx,pad+Math.round(size*0.012),pad+Math.round(size*0.012),size-2*(pad+Math.round(size*0.012)),size-2*(pad+Math.round(size*0.012)),rx); ctx.stroke();
+  const bR=Math.round(size*0.085), bCx=pad+bR+Math.round(size*0.01), bCy=pad+bR+Math.round(size*0.01);
+  ctx.fillStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(bCx,bCy,bR,0,Math.PI*2); ctx.fill(); ctx.lineWidth=Math.round(size*0.012); ctx.strokeStyle=RS.frame; ctx.stroke();
+  ctx.font=`bold ${Math.round(size*0.07)}px system-ui, Arial`; ctx.fillStyle=RS.glow; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.shadowColor=RS.glow; ctx.shadowBlur=Math.round(size*0.012);
+  ctx.fillText(RS.label,bCx,bCy+Math.round(size*0.005)); ctx.shadowBlur=0;
+  const plateH=Math.round(size*0.12), plateW=Math.round(size*0.78), plateX=Math.round((size-plateW)/2), plateY=size-pad-plateH;
+  ctx.fillStyle="rgba(0,0,0,.45)"; rr(ctx,plateX,plateY,plateW,plateH,Math.round(size*0.03)); ctx.fill();
+  ctx.lineWidth=Math.round(size*0.008); ctx.strokeStyle=RS.frame; rr(ctx,plateX,plateY,plateW,plateH,Math.round(size*0.03)); ctx.stroke();
+  ctx.font=`bold ${Math.round(size*0.08)}px system-ui, Arial`; ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.shadowColor=RS.glow; ctx.shadowBlur=Math.round(size*0.012);
+  ctx.fillText(name, plateX+plateW/2, plateY+plateH/2+Math.round(size*0.004)); ctx.shadowBlur=0;
+  return can;
+}
+function rr(ctx,x,y,w,h,r){ const rad=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rad,y); ctx.arcTo(x+w,y,x+w,y+h,rad); ctx.arcTo(x+w,y+h,x,y+h,rad); ctx.arcTo(x,y+h,x,y,rad); ctx.arcTo(x,y,x+w,y,rad); ctx.closePath(); }
+function loadImage(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; }); }
+async function makeFallback(name){ const s=512; const c=document.createElement("canvas"); c.width=c.height=s; const x=c.getContext("2d"); const cs=[["#182033","#263b64"],["#1b2a2f","#2d4e54"],["#3a1c39","#6b2c68"],["#3a2b0f","#71571b"]]; const [a,b]=cs[Math.floor(Math.random()*cs.length)]; const g=x.createLinearGradient(0,0,s,s); g.addColorStop(0,a); g.addColorStop(1,b); x.fillStyle=g; x.fillRect(0,0,s,s); x.fillStyle="rgba(255,255,255,.15)"; x.font="bold 220px system-ui,Arial"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(name.slice(0,2).toUpperCase(), s/2, s/2); const img=new Image(); img.src=c.toDataURL("image/png"); await new Promise(r=>img.onload=r); return img; }
+
+const SAVE_KEY2="idle_full_v20_save"; // ensure uniqueness
+const DEF_SAVE2={ gems:50, pity10:0, pity50:0, owned:{} };
+
+function addOwned(key){
+  if (!state.owned[key]){
+    state.owned[key]={ obtainedAt:Date.now() };
+  }
+}
+async function showPullResult(key){
+  const h=HEROES[key];
+  const card=await renderCard({portrait:h.file, name:h.name, rarity:h.rarity, size:512});
+  const cell=document.createElement("div"); cell.appendChild(card);
+  document.getElementById("portal").prepend(cell);
+}
+async function refreshCollection(){
+  const wrap=document.getElementById("collection"); wrap.innerHTML="";
+  const owned=Object.keys(HEROES).filter(k=>state.owned[k]);
+  if (!owned.length){ const d=document.createElement("div"); d.className="cell"; d.textContent="Aucun héros obtenu pour l’instant."; return wrap.appendChild(d); }
+  for (const k of owned){
+    const h=HEROES[k]; const card=await renderCard({portrait:h.file, name:h.name, rarity:h.rarity, size:256});
+    const cell=document.createElement("div"); cell.className="cell"; cell.appendChild(card);
+    const tiny=document.createElement("div"); tiny.className="tiny"; tiny.textContent=`${h.role} • ${h.rarity}`; cell.appendChild(tiny); wrap.appendChild(cell);
+  }
+}
+
+const PRICE_SINGLE=5, PRICE_TEN=50;
+function canAfford(p){ return state.gems>=p; }
+function consume(p){ if (!canAfford(p)) return false; state.gems-=p; save(); return true; }
+
+const RATES=[{rarity:"UR",w:2},{rarity:"SSR",w:8},{rarity:"SR",w:25},{rarity:"R",w:65}];
+function rollRarity(){
+  const p10=state.pity10>=9, p50=state.pity50>=49;
+  if (p50){ const pool=RATES.filter(x=>x.rarity==="SSR"||x.rarity==="UR"); let sum=pool.reduce((s,x)=>s+x.w,0), t=Math.random()*sum; for(const it of pool){ if((t-=it.w)<=0) return it.rarity; } return "SSR"; }
+  if (p10){ const pool=RATES.filter(x=>x.rarity!=="R"); let sum=pool.reduce((s,x)=>s+x.w,0), t=Math.random()*sum; for(const it of pool){ if((t-=it.w)<=0) return it.rarity; } return "SR"; }
+  let t=Math.random()*100; for(const it of RATES){ if((t-=it.w)<=0) return it.rarity; } return "R";
+}
+function rollHero(){
+  const rarity=rollRarity(); state.pity10++; state.pity50++;
+  if (["SR","SSR","UR"].includes(rarity)) state.pity10=0;
+  if (["SSR","UR"].includes(rarity)) state.pity50=0;
+  const pool = Object.entries(HEROES).filter(([k,v])=>v.rarity===rarity).map(([k])=>k);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+async function pull1(){ if (!consume(PRICE_SINGLE)) return alert("Pas assez de gemmes !"); const k=rollHero(); addOwned(k); save(); await showPullResult(k); refreshCollection(); }
+async function pull10(){
+  if (!consume(PRICE_TEN)) return alert("Pas assez de gemmes !");
+  const keys=[]; for (let i=0;i<10;i++) keys.push(rollHero());
+  if (!keys.some(k=>["SR","SSR","UR"].includes(HEROES[k].rarity))){ const idx=keys.findIndex(k=>HEROES[k].rarity==="R"); keys[idx] = Object.entries(HEROES).find(([key,v])=>v.rarity==="SR")[0]; }
+  for (const k of keys){ addOwned(k); await showPullResult(k); }
+  save(); refreshCollection();
+}
+
+document.getElementById("btnPull1").onclick=pull1;
+document.getElementById("btnPull10").onclick=pull10;
+document.getElementById("btnGift").onclick=()=>{ state.gems+=50; save(); };
+document.getElementById("btnReset").onclick=()=>{ if (confirm("Réinitialiser ?")){ state=structuredClone(DEF_SAVE); save(); document.getElementById("portal").innerHTML=""; refreshCollection(); } };
+
+save(); refreshCollection();
+</script>
+</body>
+</html>
